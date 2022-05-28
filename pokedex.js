@@ -1,3 +1,20 @@
+const typeColors = {
+  fire: "#FDDFDF",
+  grass: "#DEFDE0",
+  electric: "#FCF7DE",
+  water: "#DEF3FD",
+  ground: "#f4e7da",
+  rock: "#d5d5d4",
+  fairy: "#fceaff",
+  poison: "#98d7a5",
+  bug: "#f8d5a3",
+  dragon: "#97b3e6",
+  psychic: "#eaeda1",
+  flying: "#F5F5F5",
+  fighting: "#E6E0D4",
+  normal: "#F5F5F5",
+};
+
 const retrievePokemonListFromAPI = async () => {
   // lanzo peticion fetch
   const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=151');
@@ -46,6 +63,9 @@ const draw = async(pokemons) => {
     divFlipCardFront.appendChild(h3);
     
     const pokemonDetail = await retrieveDetailPokemonFromAPI(url);
+    const tipoPrincipal = pokemonDetail.types[0].type.name;
+    const colorHexCard = typeColors[tipoPrincipal];
+    divFlipCardInner.style.backgroundColor = colorHexCard;
     const urlPhoto = pokemonDetail.sprites.other.dream_world.front_default;
 
     const img = document.createElement("img");
@@ -61,10 +81,17 @@ const draw = async(pokemons) => {
     const ulDatos = document.createElement("ul");
     const liID = document.createElement("li");
     const liBaseExperience = document.createElement("li");
+    const liTipo = document.createElement("li");
     liID.innerText = `ID: ${pokemonDetail.id}`;
     liBaseExperience.innerText = `Experiencia base: ${pokemonDetail.base_experience}`;
+
+    const typeNames = pokemonDetail.types.map(e => e.type.name);
+    liTipo.innerText = `Tipo/s: ${typeNames.join(", ")}`;
+
     ulDatos.appendChild(liID);
     ulDatos.appendChild(liBaseExperience);
+    ulDatos.appendChild(liTipo);
+
     divFlipCardBack.appendChild(ulDatos);
 
     divFlipCardInner.appendChild(divFlipCardBack);
@@ -73,17 +100,23 @@ const draw = async(pokemons) => {
 
     catalogDiv.appendChild(divFlipCard);
   }
+
+  document.querySelector("#btnSearch").removeAttribute("disabled");
 }
 
 
 
 const main = async() => {
+  const btnSearch = document.querySelector("#btnSearch");
+  btnSearch.setAttribute("disabled", true);
+
   const pokemons = await retrievePokemonListFromAPI();
   draw(pokemons);
 
   const searchElement = document.querySelector("#search");
-  const btnSearch = document.querySelector("#btnSearch");
+
   btnSearch.addEventListener("click", async function(ev) {
+    btnSearch.setAttribute("disabled", true);
     const pokemons = await retrievePokemonListFromAPI();
     const filteredPokemons = pokemons.filter(
       elemento => elemento.name.includes(searchElement.value)
